@@ -5,7 +5,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
 
-public class PageRankReducer1 extends Reducer<Text, NodeWritable, Text, Text> {
+public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
 
     private final Text outputValue = new Text();
 

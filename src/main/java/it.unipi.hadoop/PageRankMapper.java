@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PageRankMapperr extends Mapper<LongWritable, Text, Text, NodeWritable> {
+public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritable> {
 
     private final Text reducerKey = new Text();
     private  NodeWritable reducerValue = new NodeWritable();
