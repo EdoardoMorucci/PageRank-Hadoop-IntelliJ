@@ -33,12 +33,26 @@ public class PageRank {
             System.exit(1);
         }
 
-        System.out.println("args[0]: <treshold>=" + otherArgs[0]);
-        System.out.println("args[1]: <maxIteration>=" + otherArgs[1]);
-        System.out.println("args[2]: <input>=" + otherArgs[2]);
-        System.out.println("args[3]: <output>=" + otherArgs[3]);
+        Double treshold = Double.parseDouble(otherArgs[0]);
+        Integer maxIteration = Integer.parseInt(otherArgs[1]);
+        String inputFile = otherArgs[2];
+        String outputFile = otherArgs[3];
+        System.out.println("args[0]: <treshold>=" + treshold);
+        System.out.println("args[1]: <maxIteration>=" + maxIteration);
+        System.out.println("args[2]: <input>=" + inputFile);
+        System.out.println("args[3]: <output>=" + outputFile);
 
-//        pageRankCalculator();
+        pageRankCalculator(inputFile, outputFile);
+
+
+
+//        Long GlobalNum = job.getCounters().findCounter(
+//                TaskCounter.MAP_INPUT_RECORDS).getValue();
+//        System.out.println("global " + GlobalNum);
+    }
+
+    private static void pageRankCalculator(String input, String output) throws IOException, ClassNotFoundException, InterruptedException {
+        Configuration conf = new Configuration();
 
         Job job = Job.getInstance(conf, "PageRank");
         job.setJarByClass(PageRank.class);
@@ -55,31 +69,14 @@ public class PageRank {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
-        // set treshold and maxIteration
-        double treshold = Double.parseDouble(otherArgs[0]);
-        int maxIteration = Integer.parseInt(otherArgs[1]);
-        job.getConfiguration().setDouble("page.rank.treshold", treshold);
-        job.getConfiguration().setInt("page.rank.maxIteration", maxIteration);
-
-      //  job.getConfiguration().getLong("GlobalNum", GlobalNum);
-
-
         // define I/O
-        FileInputFormat.addInputPath(job, new Path(otherArgs[2]));
-        FileOutputFormat.setOutputPath(job, new Path(otherArgs[3]));
+        FileInputFormat.addInputPath(job, new Path(input));
+        FileOutputFormat.setOutputPath(job, new Path(output));
 
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
         System.exit(job.waitForCompletion(true) ? 0 : 1);
-
-//        Long GlobalNum = job.getCounters().findCounter(
-//                TaskCounter.MAP_INPUT_RECORDS).getValue();
-//        System.out.println("global " + GlobalNum);
-    }
-
-    private void pageRankCalculator(){
-
     }
 
 }
