@@ -40,7 +40,7 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
         List<String> outlinks = new ArrayList<>();
         for (int i = 1; i < pageRankAndOutlinks.length; i++) {
 //            System.out.print(pageRankAndOutlinks[i] + " ");
-            outlinks.add(pageRankAndOutlinks[i]);
+            outlinks.add(pageRankAndOutlinks[i].trim());
         }
 
         // Se dangling node lo ignoro tanto verrà tenuto di conto nel reducer
@@ -57,24 +57,18 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
             aux = new NodeWritable(Double.parseDouble(pageRankAndOutlinks[0]), outlinks);
         }
 
-
-
         reducerKey.set(titlePage);
         reducerValue.set(aux);
         // Pass graph structure
         context.write(reducerKey, reducerValue);
 
-        System.out.println(outlinks.get(0).trim().compareTo("sinknode"));
-        String auxStr = outlinks.get(0).trim();
-        System.out.println("|"+auxStr+"|");
-        System.out.println(auxStr.compareTo("sinknode"));
+
         // Va fatto se non abbiamo un sinknode, cioè se outlinks[0]!="sinknode"
-        if(auxStr.compareTo("sinknode") == 0){
-            System.out.println("Entrato.");
+        if(outlinks.get(0).trim().replaceAll("\\P{Print}","").equals("sinknode")){
             return;
         }
 
-        // Add to combiner titlePage and list of outlinks
+        // Add to combiner the list of outlinks for each title page
         Double pageRankFatherContribute = Double.parseDouble(pageRankAndOutlinks[0]) / (outlinks.size());
         for (String link : outlinks) {
             if (combiner.containsKey(link)) {
@@ -91,36 +85,6 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
 
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
-
-            List<NodeWritable> list = new ArrayList<>();
-            File inputAdjacency = new File("src/main/resources/combiner.txt");
-            FileWriter myWriter = null;
-            try {
-                myWriter = new FileWriter("src/main/resources/combiner.txt");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            for (String key : combiner.keySet()) {
-                String str = key;
-                str += ": ";
-                list = combiner.get(key);
-                for (NodeWritable nw : list) {
-                    str += nw.toString();
-                    str += " ";
-                }
-                System.out.println(str);
-
-
-                try {
-                    myWriter.write(str + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            myWriter.close();
-
-
-
         List<NodeWritable> aux;
         Double sumPR = 0.0d;
         for (String key : combiner.keySet()) {
@@ -137,5 +101,31 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
             context.write(reducerKey, reducerValue);
         }
 
+        /*
+            List<NodeWritable> list = new ArrayList<>();
+            File inputAdjacency = new File("src/main/resources/combiner.txt");
+            FileWriter myWriter = null;
+            try {
+                myWriter = new FileWriter("src/main/resources/combiner.txt");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            for (String key : combiner.keySet()) {
+                String str = key;
+                str += ": ";
+                list = combiner.get(key);
+                for (NodeWritable nw : list) {
+                    str += nw.toString();
+                    str += " ";
+                }
+
+                try {
+                    myWriter.write(str + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            myWriter.close();
+*/
     }
 }

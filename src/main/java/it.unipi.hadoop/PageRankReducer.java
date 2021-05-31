@@ -22,13 +22,17 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
             }
             System.out.println("\n");
 */
-        Double d = context.getConfiguration().getDouble("page.rank.N", 10);
 
         NodeWritable graphNode = null;
         Double sumPR = 0.0d;
         String out = "";
+        String graphStructure = "";
+
         for(NodeWritable aux: values){
             if(aux.getOutlinks() != null){
+                for(String str: aux.getOutlinks()){
+                    graphStructure += "-> " + str;
+                }
                 // GraphStructure
                 graphNode = aux;
             }else{
@@ -37,16 +41,26 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
             }
         }
 
+
+        // Node that isn't pointed from anyone
         if(sumPR == 0.0d){
             sumPR = graphNode.getPageRank();
         }
         out = ">> " + sumPR.toString();
+        out += graphStructure;
+        /*
+        // Se è il graph structure
         if(graphNode != null){
+            System.out.println(key);
+            System.out.println(graphNode.getPageRank());
+            System.out.println(graphNode.getOutlinks());
 
             for(String str: graphNode.getOutlinks()){
                 out += "-> " + str;
             }
         }
+        */
+
         outputValue.set(out);
         context.write(key, outputValue);
 

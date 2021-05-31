@@ -31,8 +31,7 @@ public class ParseMapper extends Mapper<LongWritable, Text, Text, Text> {
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String input = value.toString();
-
-        String adjacencyList = "";
+        // input:   <title>titlePage</title> ecc..  [[outlink]] ecc.. [[outlink]] ...
         String[] title = input.trim().split("</title>");
         title[0] = title[0].replaceAll("\t", "");
         title[0] = title[0].substring(7);
@@ -48,9 +47,6 @@ public class ParseMapper extends Mapper<LongWritable, Text, Text, Text> {
             String auxSubString = substring[j];
             // recive:    pagename]] other pagename]] ...
             String[] outLink = auxSubString.trim().split("\\]\\]");
-//            System.out.print(title[0] + " ");
-//            System.out.print(outLink[0]);
-//            System.out.println();
             reducerValue.set(outLink[0]);
             context.write(reducerKey, new Text(outLink[0]));
         }

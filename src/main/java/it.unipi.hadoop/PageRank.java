@@ -48,10 +48,7 @@ public class PageRank {
         parseInput(inputFile, parseOutputPath);
         // outputfile:   src/main/resources  +  "/part-r-00000"
         parseOutputPath += "/part-r-00000";
-//        pageRankCalculator(parseOutputPath, outputFile);
-        pageRankCalculator("src/main/resources/output.txt/part-r-00000", outputFile);
-
-
+        pageRankCalculator(parseOutputPath, outputFile);
 
     }
 

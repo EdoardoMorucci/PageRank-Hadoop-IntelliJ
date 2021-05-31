@@ -30,7 +30,9 @@ public class NodeWritable implements Writable{
     }
 
     public List<String> getOutlinks() {
-        return outlinks;
+        List<String> listReturn = new ArrayList<>();
+        listReturn = outlinks;
+        return listReturn;
     }
 
     public void setOutlinks(List<String> outlinks) {
@@ -86,12 +88,17 @@ public class NodeWritable implements Writable{
     @Override
     public void write(DataOutput out) throws IOException {
         out.writeDouble(this.pageRank);
-        out.writeChars(getStringFromOutlink());
+//        out.writeChars(getStringFromOutlink());
+        out.writeUTF(getStringFromOutlink());
+//        out.writeBytes(getStringFromOutlink());
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
         this.pageRank = in.readDouble();
-        this.outlinks = makeOutlinksFromString(in.readLine());
+//        this.outlinks = makeOutlinksFromString(in.readLine());
+        this.outlinks = makeOutlinksFromString(in.readUTF());
+
+
     }
 }

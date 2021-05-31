@@ -18,10 +18,8 @@ public class ParseReducer extends Reducer<Text, Text, Text, Text> {
 
     public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
         String output = ">> 0.0";
-//        System.out.println("Reducer");
         for(Text str: values){
             String aux = str.toString();
-//            System.out.println(aux);
             output += "-> " + aux;
         }
 
