@@ -4,6 +4,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,52 +16,65 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
 
     private final Text reducerKey = new Text();
     private  NodeWritable reducerValue = new NodeWritable();
-    Map<String, List<NodeWritable>> combiner = new HashMap<String, List<NodeWritable>>();
+    private Map<String, List<NodeWritable>> combiner = new HashMap<String, List<NodeWritable>>();
+    private long totalPages;
 
     @Override
     public void setup(Context context){
-        double treshold = context.getConfiguration().getDouble("page.rank.treshold", 0);
-        long globalNum = context.getConfiguration().getLong("GlobalNum",0);
-        System.out.println("global num" + globalNum);
-        System.out.println("treshold" + treshold);
+        totalPages = context.getConfiguration().getLong("totalPages",0);
+        System.out.println("global num: " + totalPages);
     }
 
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-        // input:   titlePage>> PR, outlink1, outlink2, ..., outlinkN
+        // input:   titlePage   >> PR-> outlink1-> outlink2-> ...-> outlinkN
         String input = value.toString();
-        // substring[0] = titlepage     substring[1] = PR, outlink1, outlink2, ..., outlinkN
+        // substring[0] = titlepage     substring[1] = PR-> outlink1-> outlink2-> ...-> outlinkN
         String[] subString = input.trim().split(">> ");
-        String titlePage = subString[0];
-        System.out.print(titlePage+ ":");
+        String titlePage = subString[0].trim();
+
         // substring[1] = PR-> outlink1-> outlink2-> ...-> outlinkN
         // pageRankAndOutlinks[0]=pageRank     pageRankAndOutlinks[1]=outlink1     pageRankAndOutlinks[2]=outlink2
         String[] pageRankAndOutlinks = subString[1].trim().split("-> ");
         List<String> outlinks = new ArrayList<>();
         for (int i = 1; i < pageRankAndOutlinks.length; i++) {
-            System.out.print(pageRankAndOutlinks[i] + " ");
+//            System.out.print(pageRankAndOutlinks[i] + " ");
             outlinks.add(pageRankAndOutlinks[i]);
         }
-        System.out.println("");
 
-        // Add to combiner titlePage and list of outlinks
-        NodeWritable aux = new NodeWritable(Double.parseDouble(pageRankAndOutlinks[0]), outlinks);
-        List<NodeWritable> list = new ArrayList<>();
+        // Se dangling node lo ignoro tanto verrà tenuto di conto nel reducer
+        if(outlinks.size()==0){
+            return;
+        }
 
-            /*
-            if(combiner.containsKey(titlePage)){
-                combiner.get(titlePage).add(aux);
-            }else{
-                list.add(aux);
-                combiner.put(titlePage, list);
-            }
-            */
+        NodeWritable aux;
+        if(Double.parseDouble(pageRankAndOutlinks[0])==0.0d){
+            Double initialPageRank = (1/(double)totalPages);
+            aux = new NodeWritable(initialPageRank, outlinks);
+            pageRankAndOutlinks[0] = initialPageRank.toString();
+        }else{
+            aux = new NodeWritable(Double.parseDouble(pageRankAndOutlinks[0]), outlinks);
+        }
+
+
+
         reducerKey.set(titlePage);
         reducerValue.set(aux);
+        // Pass graph structure
         context.write(reducerKey, reducerValue);
 
+        System.out.println(outlinks.get(0).trim().compareTo("sinknode"));
+        String auxStr = outlinks.get(0).trim();
+        System.out.println("|"+auxStr+"|");
+        System.out.println(auxStr.compareTo("sinknode"));
+        // Va fatto se non abbiamo un sinknode, cioè se outlinks[0]!="sinknode"
+        if(auxStr.compareTo("sinknode") == 0){
+            System.out.println("Entrato.");
+            return;
+        }
 
+        // Add to combiner titlePage and list of outlinks
         Double pageRankFatherContribute = Double.parseDouble(pageRankAndOutlinks[0]) / (outlinks.size());
         for (String link : outlinks) {
             if (combiner.containsKey(link)) {
@@ -76,13 +91,12 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
 
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
-            /*
-            Stampa su file
+
             List<NodeWritable> list = new ArrayList<>();
-            File inputAdjacency = new File("src/main/resources/output.txt");
+            File inputAdjacency = new File("src/main/resources/combiner.txt");
             FileWriter myWriter = null;
             try {
-                myWriter = new FileWriter("src/main/resources/output.txt");
+                myWriter = new FileWriter("src/main/resources/combiner.txt");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -105,7 +119,7 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
             }
             myWriter.close();
 
-             */
+
 
         List<NodeWritable> aux;
         Double sumPR = 0.0d;

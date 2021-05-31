@@ -1,6 +1,58 @@
 package it.unipi.hadoop;
 
-public class ParseMapper {
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class ParseMapper extends Mapper<LongWritable, Text, Text, Text> {
+    private final Text reducerKey = new Text();
+    private final Text reducerValue = new Text();
+    Map<String, List<String>> combiner = new HashMap<String, List<String>>();
+
+    @Override
+    public void setup(Context context){
+        System.out.println("Setup");
+    }
 
 
+    @Override
+    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+        String input = value.toString();
+
+        String adjacencyList = "";
+        String[] title = input.trim().split("</title>");
+        title[0] = title[0].replaceAll("\t", "");
+        title[0] = title[0].substring(7);
+
+        reducerKey.set(title[0]);
+        String[] substring = input.trim().split("\\[\\[");
+
+        if(substring.length == 1){
+            reducerValue.set("sinknode");
+            context.write(reducerKey, reducerValue);
+        }
+        for(int j=1; j<substring.length; j++){
+            String auxSubString = substring[j];
+            // recive:    pagename]] other pagename]] ...
+            String[] outLink = auxSubString.trim().split("\\]\\]");
+//            System.out.print(title[0] + " ");
+//            System.out.print(outLink[0]);
+//            System.out.println();
+            reducerValue.set(outLink[0]);
+            context.write(reducerKey, new Text(outLink[0]));
+        }
+    }
 }

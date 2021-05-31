@@ -1,7 +1,0 @@
-it/unipi/hadoop/ParseMapper.class
-it/unipi/hadoop/PageRankMapper.class
-it/unipi/hadoop/ParseReducer.class
-it/unipi/hadoop/PageRank.class
-it/unipi/hadoop/NodeWritable.class
-it/unipi/hadoop/PageRankReducer.class
-it/unipi/hadoop/Graph.class

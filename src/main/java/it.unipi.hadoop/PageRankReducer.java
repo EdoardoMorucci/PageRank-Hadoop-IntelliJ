@@ -36,10 +36,11 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
                 sumPR += aux.getPageRank();
             }
         }
+
         if(sumPR == 0.0d){
             sumPR = graphNode.getPageRank();
         }
-        out = ">>> " + sumPR.toString();
+        out = ">> " + sumPR.toString();
         if(graphNode != null){
 
             for(String str: graphNode.getOutlinks()){
