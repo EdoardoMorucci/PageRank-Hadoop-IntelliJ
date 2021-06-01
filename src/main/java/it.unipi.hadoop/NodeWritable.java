@@ -70,16 +70,16 @@ public class NodeWritable implements Writable{
             return "";
         }
         for(String str: outlinks){
+            aux += "-> ";
             aux += str;
-            aux += ";";
         }
         return aux;
     }
 
     private List<String> makeOutlinksFromString(String str){
-        if(str == null)
+        if(str.equals(""))
             return null;
-        String[] aux = str.trim().split(";");
+        String[] aux = str.trim().split("-> ");
         List<String> listOutlinks = new ArrayList<>();
         listOutlinks.addAll(Arrays.asList(aux));
         return listOutlinks;

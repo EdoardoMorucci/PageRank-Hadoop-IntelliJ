@@ -1,0 +1,5 @@
+Cazzo	>> 0.0-> Cazzo-> Cerberus
+Cerberus	>> 0.0-> Cazzo
+Kanilus	>> 0.0-> Cazzo-> Cazzo-> Keroberos
+Keroberos	>> 0.0-> SinknodeTitle-> DanglingTitleå-> Cerberus
+SinknodeTitle	>> 0.0-> sinknode

@@ -1,0 +1,6 @@
+Cazzo	>> 0.43333333333333335-> Cazzo-> Cerberus
+Cerberus	>> 0.16666666666666669-> Cazzo
+DanglingTitleå	>> 0.06666666666666667
+Kanilus	>> 0.2-> Cazzo-> Cazzo-> Keroberos
+Keroberos	>> 0.06666666666666667-> SinknodeTitle-> DanglingTitleå-> Cerberus
+SinknodeTitle	>> 0.06666666666666667-> sinknode

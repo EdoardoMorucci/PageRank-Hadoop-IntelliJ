@@ -39,7 +39,6 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
         String[] pageRankAndOutlinks = subString[1].trim().split("-> ");
         List<String> outlinks = new ArrayList<>();
         for (int i = 1; i < pageRankAndOutlinks.length; i++) {
-//            System.out.print(pageRankAndOutlinks[i] + " ");
             outlinks.add(pageRankAndOutlinks[i].trim());
         }
 
@@ -62,14 +61,15 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
         // Pass graph structure
         context.write(reducerKey, reducerValue);
 
-
-        // Va fatto se non abbiamo un sinknode, cioè se outlinks[0]!="sinknode"
+        // Va fatto se abbiamo un sinknode, cioè se outlinks[0]!="sinknode"
         if(outlinks.get(0).trim().replaceAll("\\P{Print}","").equals("sinknode")){
             return;
         }
 
         // Add to combiner the list of outlinks for each title page
         Double pageRankFatherContribute = Double.parseDouble(pageRankAndOutlinks[0]) / (outlinks.size());
+        System.out.println(titlePage + " " +outlinks.size() + " " + pageRankFatherContribute + " " +pageRankAndOutlinks[0]);
+
         for (String link : outlinks) {
             if (combiner.containsKey(link)) {
                 aux = new NodeWritable(pageRankFatherContribute);
@@ -88,6 +88,7 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
         List<NodeWritable> aux;
         Double sumPR = 0.0d;
         for (String key : combiner.keySet()) {
+            sumPR = 0.0d;
             aux = combiner.get(key);
             if(aux.size()==1){
                 reducerValue.set(aux.get(0));
@@ -98,10 +99,11 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
                 reducerValue.set(new NodeWritable(sumPR));
             }
             reducerKey.set(key);
+            System.out.println("clean: " + key +" " + reducerValue.getPageRank());
             context.write(reducerKey, reducerValue);
         }
 
-        /*
+
             List<NodeWritable> list = new ArrayList<>();
             File inputAdjacency = new File("src/main/resources/combiner.txt");
             FileWriter myWriter = null;
@@ -126,6 +128,6 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
                 }
             }
             myWriter.close();
-*/
+
     }
 }

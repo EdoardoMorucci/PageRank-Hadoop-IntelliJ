@@ -25,6 +25,7 @@ public class PageRank {
 
     private static long totalPages;
 
+
     public static void main(String[] args) throws Exception{
 
         Configuration conf = new Configuration();
@@ -37,18 +38,26 @@ public class PageRank {
 
         Double treshold = Double.parseDouble(otherArgs[0]);
         Integer maxIteration = Integer.parseInt(otherArgs[1]);
-        String inputFile = otherArgs[2];
-        String outputFile = otherArgs[3];
+        Double dampingFactor = Double.parseDouble(otherArgs[2]);
+        String inputFile = otherArgs[3];
+        String outputFile = otherArgs[4];
         System.out.println("args[0]: <treshold>=" + treshold);
         System.out.println("args[1]: <maxIteration>=" + maxIteration);
-        System.out.println("args[2]: <input>=" + inputFile);
-        System.out.println("args[3]: <output>=" + outputFile);
+        System.out.println("args[2]: <dampingFactor>=" + dampingFactor);
+        System.out.println("args[3]: <input>=" + inputFile);
+        System.out.println("args[4]: <output>=" + outputFile);
 
-        String parseOutputPath = "src/main/resources/parseOutput";
+
+
+        String parseOutputPath = "src/main/resources/rankOutput0";
         parseInput(inputFile, parseOutputPath);
-        // outputfile:   src/main/resources  +  "/part-r-00000"
+//         outputfile:   src/main/resources  +  "/part-r-00000"
         parseOutputPath += "/part-r-00000";
-        pageRankCalculator(parseOutputPath, outputFile);
+        outputFile += "/part-r-00000";
+        String path = "src/main/resources/rankOutput";
+        for(int i = 0; i<20; i++){
+            pageRankCalculator((path + i + "/part-r-00000"), (path + (i+1)), dampingFactor);
+        }
 
     }
 
@@ -83,9 +92,11 @@ public class PageRank {
         System.out.println("global: " + totalPages);
     }
 
-    private static void pageRankCalculator(String input, String output) throws Exception {
+    private static void pageRankCalculator(String input, String output, Double dampingFactor) throws Exception {
         Configuration conf = new Configuration();
         conf.setLong("totalPages", totalPages);
+        conf.setDouble("dampingFactor", dampingFactor);
+
 
         Job job = Job.getInstance(conf, "PageRank");
         job.setJarByClass(PageRank.class);

@@ -3,6 +3,7 @@ package it.unipi.hadoop;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import javax.security.auth.login.Configuration;
 import java.io.IOException;
 
 public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
@@ -10,6 +11,9 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
     private final Text outputValue = new Text();
 
     public void reduce(Text key, Iterable<NodeWritable> values, Context context) throws IOException, InterruptedException {
+        Double dampingFactor = context.getConfiguration().getDouble("dampingFactor",0);
+        Long totalPages = context.getConfiguration().getLong("totalPages",0);
+
 /*
             System.out.print(key.toString() + ": ");
             for(NodeWritable aux: values){
@@ -29,9 +33,11 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
         String graphStructure = "";
 
         for(NodeWritable aux: values){
-            if(aux.getOutlinks() != null){
+            if(aux.getOutlinks() != null && aux.getOutlinks().size()>0){
                 for(String str: aux.getOutlinks()){
-                    graphStructure += "-> " + str;
+                    if(!str.equals("")){
+                        graphStructure += "-> " + str;
+                    }
                 }
                 // GraphStructure
                 graphNode = aux;
@@ -48,6 +54,7 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
         }
         out = ">> " + sumPR.toString();
         out += graphStructure;
+
         /*
         // Se è il graph structure
         if(graphNode != null){
