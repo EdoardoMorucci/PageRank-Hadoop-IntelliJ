@@ -29,6 +29,7 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
 
         NodeWritable graphNode = null;
         Double sumPR = 0.0d;
+        Double pageRank = 0.0d;
         String out = "";
         String graphStructure = "";
 
@@ -47,14 +48,15 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
             }
         }
 
+        pageRank = (dampingFactor/totalPages)+((1-dampingFactor)*sumPR);
 
-        // Node that isn't pointed from anyone
-        if(sumPR == 0.0d){
-            sumPR = graphNode.getPageRank();
-        }
-        out = ">> " + sumPR.toString();
+        out = ">> " + pageRank.toString();
         out += graphStructure;
 
+        // Node that isn't pointed from anyone
+//        if(sumPR == 0.0d){
+//            sumPR = graphNode.getPageRank();
+//        }
         /*
         // Se è il graph structure
         if(graphNode != null){

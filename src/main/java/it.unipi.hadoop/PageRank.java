@@ -1,5 +1,6 @@
 package it.unipi.hadoop;
 
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -32,21 +33,18 @@ public class PageRank {
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 
         if (otherArgs.length != 4) {
-            System.err.println("Usage: PageRank <treshold> <maxIteration> <input> <output>");
+            System.err.println("Usage: PageRank <maxIteration> <input> <output>");
             System.exit(1);
         }
 
-        Double treshold = Double.parseDouble(otherArgs[0]);
-        Integer maxIteration = Integer.parseInt(otherArgs[1]);
-        Double dampingFactor = Double.parseDouble(otherArgs[2]);
-        String inputFile = otherArgs[3];
-        String outputFile = otherArgs[4];
-        System.out.println("args[0]: <treshold>=" + treshold);
-        System.out.println("args[1]: <maxIteration>=" + maxIteration);
-        System.out.println("args[2]: <dampingFactor>=" + dampingFactor);
-        System.out.println("args[3]: <input>=" + inputFile);
-        System.out.println("args[4]: <output>=" + outputFile);
-
+        Integer maxIteration = Integer.parseInt(otherArgs[0]);
+        Double dampingFactor = Double.parseDouble(otherArgs[1]);
+        String inputFile = otherArgs[2];
+        String outputFile = otherArgs[3];
+        System.out.println("args[0]: <maxIteration>=" + maxIteration);
+        System.out.println("args[1]: <dampingFactor>=" + dampingFactor);
+        System.out.println("args[2]: <input>=" + inputFile);
+        System.out.println("args[3]: <output>=" + outputFile);
 
 
         String parseOutputPath = "src/main/resources/rankOutput0";
@@ -55,9 +53,11 @@ public class PageRank {
         parseOutputPath += "/part-r-00000";
         outputFile += "/part-r-00000";
         String path = "src/main/resources/rankOutput";
-        for(int i = 0; i<20; i++){
+        for(int i = 0; i<maxIteration; i++){
             pageRankCalculator((path + i + "/part-r-00000"), (path + (i+1)), dampingFactor);
         }
+
+        sort((path+maxIteration+"/part-r-00000"), outputFile);
 
     }
 
@@ -122,6 +122,37 @@ public class PageRank {
 
         if (!job.waitForCompletion(true)) throw new Exception("Exception Job failed");
         System.out.println("Fine PageRank stage.");
+    }
+
+    public static void sort(String input, String output) throws Exception {
+        Configuration conf = new Configuration();
+
+        Job job = Job.getInstance(conf, "SortStage");
+        job.setJarByClass(PageRank.class);
+
+        // set mapper/reducer
+        job.setMapperClass(SortMapper.class);
+        job.setReducerClass(SortReducer.class);
+
+        // define mapper's output key-value
+        job.setMapOutputKeyClass(DoubleWritable.class);
+        job.setMapOutputValueClass(Text.class);
+
+        // define reducer's output key-value
+        job.setOutputKeyClass(DoubleWritable.class);
+        job.setOutputValueClass(Text.class);
+
+        job.setSortComparatorClass(DoubleComparator.class);
+
+        // define I/O
+        FileInputFormat.addInputPath(job, new Path(input));
+        FileOutputFormat.setOutputPath(job, new Path(output));
+
+        job.setInputFormatClass(TextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+
+        if (!job.waitForCompletion(true)) throw new Exception("Exception: Job failed");
+        System.out.println("Fine sort stage.");
     }
 
 

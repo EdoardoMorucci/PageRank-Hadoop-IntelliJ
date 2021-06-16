@@ -22,7 +22,6 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
     @Override
     public void setup(Context context){
         totalPages = context.getConfiguration().getLong("totalPages",0);
-        System.out.println("global num: " + totalPages);
     }
 
     @Override
@@ -68,7 +67,6 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
 
         // Add to combiner the list of outlinks for each title page
         Double pageRankFatherContribute = Double.parseDouble(pageRankAndOutlinks[0]) / (outlinks.size());
-        System.out.println(titlePage + " " +outlinks.size() + " " + pageRankFatherContribute + " " +pageRankAndOutlinks[0]);
 
         for (String link : outlinks) {
             if (combiner.containsKey(link)) {
@@ -99,7 +97,6 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
                 reducerValue.set(new NodeWritable(sumPR));
             }
             reducerKey.set(key);
-            System.out.println("clean: " + key +" " + reducerValue.getPageRank());
             context.write(reducerKey, reducerValue);
         }
 
