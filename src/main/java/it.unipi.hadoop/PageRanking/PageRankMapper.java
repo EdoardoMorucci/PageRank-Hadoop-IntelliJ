@@ -41,7 +41,8 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
             outlinks.add(pageRankAndOutlinks[i].trim());
         }
 
-        // Se dangling node lo ignoro tanto verrà tenuto di conto nel reducer
+        // if this is a dangling node I can ignore it since its page rank will be calculated automatically. A dangling
+        //node is a node without a page representation into the XML, I ignore it since it doesn't compose the graph
         if(outlinks.size()==0){
             return;
         }
@@ -60,7 +61,7 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
         // Pass graph structure
         context.write(reducerKey, reducerValue);
 
-        // Va fatto se abbiamo un sinknode, cioè se outlinks[0]!="sinknode"
+        // if this is a sinkNode I only have to write it in the context in order to maintain the graph structure
         if(outlinks.get(0).trim().replaceAll("\\P{Print}","").equals("sinknode")){
             return;
         }
@@ -81,6 +82,7 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
         }
     }
 
+    //inMapper combiner to reduce the data to be transmitted
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         List<NodeWritable> aux;
@@ -88,9 +90,11 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
         for (String key : combiner.keySet()) {
             sumPR = 0.0d;
             aux = combiner.get(key);
+            //if there is only an element into the list I can use that NodeWritable instance with the correct PR
             if(aux.size()==1){
                 reducerValue.set(aux.get(0));
             }else{
+                //in this case I have to sum the PR of all the instances
                 for(NodeWritable node: aux){
                     sumPR += node.getPageRank();
                 }
@@ -100,7 +104,8 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
             context.write(reducerKey, reducerValue);
         }
 
-
+        /*
+        //code to debug the combiner
             List<NodeWritable> list = new ArrayList<>();
             File inputAdjacency = new File("src/main/resources/combiner.txt");
             FileWriter myWriter = null;
@@ -125,6 +130,6 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
                 }
             }
             myWriter.close();
-
+        */
     }
 }
