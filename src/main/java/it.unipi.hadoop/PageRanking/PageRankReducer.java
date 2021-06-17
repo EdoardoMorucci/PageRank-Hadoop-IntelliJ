@@ -34,14 +34,15 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
 
         for(NodeWritable aux: values){
             if(aux.getOutlinks() != null && aux.getOutlinks().size()>0){
+                // I build the list of the outlinks for the GraphStructure
                 for(String str: aux.getOutlinks()){
                     if(!str.equals("")){
                         graphStructure += "-> " + str;
                     }
                 }
-                // GraphStructure
-                graphNode = aux;
+                //graphNode = aux;
             }else{
+                // I sum all the other PR coming from the list except for the NodeWritable representing the graph structure
                 // inlinks: link that point to this titlepage (key)
                 sumPR += aux.getPageRank();
             }
