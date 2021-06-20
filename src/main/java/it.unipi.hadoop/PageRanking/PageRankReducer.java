@@ -18,7 +18,7 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
     public void reduce(Text key, Iterable<NodeWritable> values, Context context) throws IOException, InterruptedException {
         // key: titlePage       iterable of NodeWritable:
 
-        Double dampingFactor = context.getConfiguration().getDouble("dampingFactor",0);
+        Double alpha = context.getConfiguration().getDouble("alpha",0);
 
 /*
             System.out.print(key.toString() + ": ");
@@ -55,7 +55,7 @@ public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
             }
         }
 
-        pageRank = (dampingFactor/totalPages)+((1-dampingFactor)*sumPR);
+        pageRank = (alpha/totalPages)+((1-alpha)*sumPR);
 
         out = ">> " + pageRank.toString();
         out += graphStructure;

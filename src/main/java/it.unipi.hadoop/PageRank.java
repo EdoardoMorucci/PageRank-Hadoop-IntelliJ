@@ -37,24 +37,24 @@ public class PageRank {
 
         // Get input args
         Integer maxIteration = Integer.parseInt(otherArgs[0]);
-        Double dampingFactor = Double.parseDouble(otherArgs[1]);
+        Double alpha = Double.parseDouble(otherArgs[1]);
         String inputFile = otherArgs[2];
         String outputFile = otherArgs[3];
         System.out.println("args[0]: <maxIteration>=" + maxIteration);
-        System.out.println("args[1]: <dampingFactor>=" + dampingFactor);
+        System.out.println("args[1]: <alpha>=" + alpha);
         System.out.println("args[2]: <input>=" + inputFile);
         System.out.println("args[3]: <output>=" + outputFile);
 
-        String parseOutputPath = "src/main/resources/parseOutput";
+        String parseOutputPath = "parseOutput";
 
         //--------------------------- Parse Stage ---------------------------
         parseInput(inputFile, parseOutputPath);
         System.out.println("Parse stage completed.");
 
         //--------------------------- Rank Stages ---------------------------
-        String path = "src/main/resources/rankOutput";
+        String path = "rankOutput";
         for(int i = 0; i<maxIteration; i++){
-            pageRankCalculator((path + i), (path + (i+1)), dampingFactor, i);
+            pageRankCalculator((path + i), (path + (i+1)), alpha, i);
             System.out.println("Rank stage iteration " + i + " completed.");
         }
 
@@ -92,11 +92,11 @@ public class PageRank {
 
     }
 
-    private static void pageRankCalculator(String input, String output, Double dampingFactor, int iteration) throws Exception {
+    private static void pageRankCalculator(String input, String output, Double alpha, int iteration) throws Exception {
         Configuration conf = new Configuration();
         // Saving N and dampingFactor in the job configuration.
         conf.setLong("totalPages", totalPages);
-        conf.setDouble("dampingFactor", dampingFactor);
+        conf.setDouble("alpha", alpha);
 
         Job job = Job.getInstance(conf, "PageRank");
         job.setJarByClass(PageRank.class);
@@ -113,7 +113,7 @@ public class PageRank {
         job.setNumReduceTasks(N_REDUCERS);
 
         if(iteration==0){
-            FileInputFormat.addInputPath(job, new Path("src/main/resources/parseOutput"+"/part-r-00000"));
+            FileInputFormat.addInputPath(job, new Path("parseOutput"+"/part-r-00000"));
             FileOutputFormat.setOutputPath(job, new Path(output));
         }else{
             FileInputFormat.setInputPaths(job,
@@ -158,7 +158,5 @@ public class PageRank {
 
         if (!job.waitForCompletion(true)) throw new Exception("Exception: Job failed");
     }
-
-
 
 }
