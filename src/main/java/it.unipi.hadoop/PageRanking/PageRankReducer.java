@@ -8,10 +8,17 @@ import java.io.IOException;
 public class PageRankReducer extends Reducer<Text, NodeWritable, Text, Text> {
 
     private final Text outputValue = new Text();
+    private Long totalPages;
+
+    @Override
+    public void setup(Context context){
+        totalPages = context.getConfiguration().getLong("totalPages",0);
+    }
 
     public void reduce(Text key, Iterable<NodeWritable> values, Context context) throws IOException, InterruptedException {
+        // key: titlePage       iterable of NodeWritable:
+
         Double dampingFactor = context.getConfiguration().getDouble("dampingFactor",0);
-        Long totalPages = context.getConfiguration().getLong("totalPages",0);
 
 /*
             System.out.print(key.toString() + ": ");

@@ -1,5 +1,5 @@
-    <title>Keroberos</title>  [[Cerberus]]   [[DanglingTitleå]]   [[SinknodeTitle]]
-    <title>Cerberus</title>  [[Cazzo]]
-    <title>Kanilus</title>  [[Keroberos]] [[Cazzo]]  [[Cazzo]]
+    <title>Keroberos</title>  <text ghji>[[Cerberus]]   [[DanglingTitleå]]   [[SinknodeTitle]]</text>
+    <title>Cerberus</title>  <text ghji>[[Cazzo]]</text>
+    <title>Kanilus</title>  <text ghji>[[Keroberos]] [[Caz|zo]]  [[Cazzo]]</text>
     <title>SinknodeTitle</title>
-    <title>Cazzo</title>  [[Cerberus]] [[Cazzo]]
+    <title>Cazzo</title>  <text ghji>[[Cerber|us]] [[Cazzo]] </text>

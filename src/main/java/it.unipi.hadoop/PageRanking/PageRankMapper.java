@@ -16,11 +16,12 @@ public class PageRankMapper extends Mapper<LongWritable, Text, Text, NodeWritabl
 
     private final Text reducerKey = new Text();
     private  NodeWritable reducerValue = new NodeWritable();
-    private Map<String, List<NodeWritable>> combiner = new HashMap<String, List<NodeWritable>>();
+    private Map<String, List<NodeWritable>> combiner;
     private long totalPages;
 
     @Override
     public void setup(Context context){
+        combiner = new HashMap<String, List<NodeWritable>>();
         totalPages = context.getConfiguration().getLong("totalPages",0);
     }
 

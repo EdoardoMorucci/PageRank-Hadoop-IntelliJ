@@ -23,6 +23,7 @@ import org.apache.hadoop.util.GenericOptionsParser;
 public class PageRank {
 
     private static long totalPages;
+    private static final int N_REDUCERS = 3;
 
     public static void main(String[] args) throws Exception{
 
@@ -30,7 +31,7 @@ public class PageRank {
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 
         if (otherArgs.length != 4) {
-            System.err.println("Usage: PageRank <maxIteration> <input> <output>");
+            System.err.println("Usage: PageRank <maxIteration> <damping factor> <input> <output>");
             System.exit(1);
         }
 
@@ -44,7 +45,7 @@ public class PageRank {
         System.out.println("args[2]: <input>=" + inputFile);
         System.out.println("args[3]: <output>=" + outputFile);
 
-        String parseOutputPath = "src/main/resources/rankOutput0";
+        String parseOutputPath = "src/main/resources/parseOutput";
 
         //--------------------------- Parse Stage ---------------------------
         parseInput(inputFile, parseOutputPath);
@@ -53,12 +54,12 @@ public class PageRank {
         //--------------------------- Rank Stages ---------------------------
         String path = "src/main/resources/rankOutput";
         for(int i = 0; i<maxIteration; i++){
-            pageRankCalculator((path + i + "/part-r-00000"), (path + (i+1)), dampingFactor);
+            pageRankCalculator((path + i), (path + (i+1)), dampingFactor, i);
             System.out.println("Rank stage iteration " + i + " completed.");
         }
 
         //--------------------------- Sort Stage ----------------------------
-        sort((path+maxIteration+"/part-r-00000"), outputFile);
+        sort((path+maxIteration), outputFile);
         System.out.println("Sort stage completed.");
 
     }
@@ -91,7 +92,7 @@ public class PageRank {
 
     }
 
-    private static void pageRankCalculator(String input, String output, Double dampingFactor) throws Exception {
+    private static void pageRankCalculator(String input, String output, Double dampingFactor, int iteration) throws Exception {
         Configuration conf = new Configuration();
         // Saving N and dampingFactor in the job configuration.
         conf.setLong("totalPages", totalPages);
@@ -109,8 +110,19 @@ public class PageRank {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
-        FileInputFormat.addInputPath(job, new Path(input));
-        FileOutputFormat.setOutputPath(job, new Path(output));
+        job.setNumReduceTasks(N_REDUCERS);
+
+        if(iteration==0){
+            FileInputFormat.addInputPath(job, new Path("src/main/resources/parseOutput"+"/part-r-00000"));
+            FileOutputFormat.setOutputPath(job, new Path(output));
+        }else{
+            FileInputFormat.setInputPaths(job,
+                    new Path(input+"/part-r-00000"),
+                    new Path(input+"/part-r-00001"),
+                    new Path(input+"/part-r-00002"));
+            FileOutputFormat.setOutputPath(job, new Path(output));
+        }
+
 
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
@@ -135,7 +147,10 @@ public class PageRank {
 
         job.setSortComparatorClass(DoubleComparator.class);
 
-        FileInputFormat.addInputPath(job, new Path(input));
+        FileInputFormat.setInputPaths(job,
+                new Path(input+"/part-r-00000"),
+                new Path(input+"/part-r-00001"),
+                new Path(input+"/part-r-00002"));
         FileOutputFormat.setOutputPath(job, new Path(output));
 
         job.setInputFormatClass(TextInputFormat.class);
